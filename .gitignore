@@ -20,3 +20,24 @@ dist/
 # OS files
 .DS_Store
 Thumbs.db
+
+
+# binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# test binary
+*.test
+
+# output of go build
+*.out
+
+# environment
+.env
+
+# IDE
+.vscode/
+.idea/
