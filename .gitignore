@@ -1,0 +1,22 @@
+# Binaries
+myapp
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go build
+bin/
+dist/
+
+# Go modules cache
+/vendor/
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
