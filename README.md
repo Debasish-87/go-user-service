@@ -1,90 +1,340 @@
-# Go User Service
+# Go User Service (Docker + PostgreSQL)
 
-Dockerized Go REST API with PostgreSQL.
+A simple **Go REST API** that demonstrates:
 
-## Features
+* PostgreSQL integration using `pgx`
+* Docker + Docker Compose setup
+* Middleware (logging, auth, JWT)
+* Graceful server shutdown
+* Goroutines and WaitGroups
+* Background email simulation
+* Connection pooling
+* Load testing using JSON data
 
-- REST API
-- PostgreSQL (pgxpool)
-- Docker & Docker Compose
-- Retry logic for DB startup
-- Connection pool tuning
-- Graceful shutdown
-- Middleware (Auth + Logging)
-- Goroutines with WaitGroup
+---
 
-## Run with Docker
+# Project Structure
 
-```bash
+```
+go-user-service/
+│
+├── main.go
+├── Dockerfile
+├── docker-compose.yml
+├── go.mod
+├── go.sum
+├── data.json
+└── README.md
+```
+
+---
+
+# Features
+
+### REST API
+
+* Create user
+* Get all users
+* Delete user
+
+### Middleware
+
+* Request logging
+* Admin authentication
+* JWT authentication
+
+### Database
+
+* PostgreSQL
+* Automatic table creation
+* Connection pool tuning
+
+### Concurrency
+
+* Email sending simulation
+* Goroutines
+* WaitGroup
+* Context timeout
+
+### DevOps
+
+* Docker container for app
+* PostgreSQL container
+* Docker Compose orchestration
+
+---
+
+# Requirements
+
+Install the following:
+
+* Go 1.24+
+* Docker
+* Docker Compose
+* curl (for testing)
+
+---
+
+# Run the Project
+
+## 1. Clone Repo
+
+```
+git clone <repo-url>
+cd go-user-service
+```
+
+---
+
+## 2. Start with Docker
+
+Build and run services:
+
+```
 docker compose up --build
-````
+```
 
-Server runs on:
+This will start:
 
-[http://localhost:8080/signup](http://localhost:8080/signup)
-
-````
-
----
-
-# 🚀 How To Push To GitHub
-
-Inside `D:\go-user-service`
+| Service    | Port |
+| ---------- | ---- |
+| Go API     | 8080 |
+| PostgreSQL | 5432 |
 
 ---
 
-### 1️⃣ Initialize Git
+# Environment Variables
 
-```bash
-git init
-````
+Configured in `docker-compose.yml`
 
----
+```
+DATABASE_URL=postgres://postgres:pass@db:5432/godb?sslmode=disable
+```
 
-### 2️⃣ Add Files
+Database:
 
-```bash
-git add .
+```
+User: postgres
+Password: pass
+Database: godb
 ```
 
 ---
 
-### 3️⃣ Commit
+# API Endpoints
 
-```bash
-git commit -m "Initial commit - Go user service with Docker"
+## 1. Create User
+
+```
+POST /signup
+```
+
+Example:
+
+```
+curl -X POST http://localhost:8080/signup \
+-H "Content-Type: application/json" \
+-d '{"name":"John","email":"john@example.com"}'
+```
+
+Response:
+
+```
+{
+ "message":"User Created Successfully & Login Success!",
+ "token":"valid-token-123",
+ "user":{
+   "id":1,
+   "name":"John",
+   "email":"john@example.com"
+ },
+ "reports":[
+   "Success: Sent to john@example.com"
+ ]
+}
 ```
 
 ---
 
-### 4️⃣ Create Repo on GitHub
-
-Go to:
-
-👉 [https://github.com/new](https://github.com/new)
-
-Repo name:
+## 2. Get All Users
 
 ```
-go-user-service
+GET /signup
 ```
 
-DO NOT initialize with README (since you already have one).
+Example:
+
+```
+curl http://localhost:8080/signup
+```
+
+Response:
+
+```
+[
+ {
+   "id":1,
+   "name":"John",
+   "email":"john@example.com"
+ }
+]
+```
 
 ---
 
-### 5️⃣ Connect Remote
+## 3. Delete User
 
-GitHub will show commands like:
-
-```bash
-git remote add origin https://github.com/yourusername/go-user-service.git
-git branch -M main
-git push -u origin main
+```
+DELETE /signup?id=1
 ```
 
-Run them.
+Example:
 
-Done ✅
+```
+curl -X DELETE "http://localhost:8080/signup?id=1"
+```
 
 ---
+
+## 4. Admin Protected Route
+
+```
+GET /
+```
+
+Example:
+
+```
+curl "http://localhost:8080/?user=admin"
+```
+
+Response:
+
+```
+Welcome to Home Page!
+```
+
+---
+
+## 5. JWT Protected Route
+
+```
+GET /dashboard
+```
+
+Example:
+
+```
+curl http://localhost:8080/dashboard \
+-H "Authorization: Bearer valid-token-123"
+```
+
+---
+
+# Load Testing Using data.json
+
+`data.json` contains sample user payloads.
+
+Example load test using `curl` + `xargs`:
+
+```
+cat data.json | while read line; do
+curl -X POST http://localhost:8080/signup \
+-H "Content-Type: application/json" \
+-d "$line" &
+done
+wait
+```
+
+This sends **60 concurrent signup requests**.
+
+---
+
+# Graceful Shutdown
+
+The server listens for interrupt signals:
+
+```
+CTRL + C
+```
+
+When triggered:
+
+* Stops accepting new requests
+* Waits for active requests to complete
+* Closes database pool
+* Shuts down cleanly
+
+---
+
+# Database Table
+
+Created automatically:
+
+```
+CREATE TABLE users (
+ id SERIAL PRIMARY KEY,
+ name TEXT NOT NULL,
+ email TEXT UNIQUE NOT NULL
+);
+```
+
+---
+
+# Docker Services
+
+### App
+
+```
+golang:1.24-alpine
+```
+
+Builds the Go binary and runs it.
+
+### Database
+
+```
+postgres:15-alpine
+```
+
+---
+
+# Example Logs
+
+```
+Connected to PostgreSQL
+Users table ready.
+Server running at http://localhost:8080/signup
+URL: /signup | Method: POST
+Signup process started...
+User created in Database.
+Token generated!
+All background tasks finished.
+```
+
+---
+
+# Future Improvements
+
+* Proper JWT generation
+* Password hashing
+* User login endpoint
+* Email queue (RabbitMQ / Kafka)
+* Pagination for user listing
+* Rate limiting
+* Structured logging
+* Prometheus metrics
+* Unit tests
+
+---
+
+# Author
+
+Go backend demo project for learning:
+
+* REST APIs
+* Concurrency
+* Docker
+* PostgreSQL
+* Middleware
+* Context management
